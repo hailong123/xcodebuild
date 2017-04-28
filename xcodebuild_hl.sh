@@ -5,9 +5,9 @@ echo "~~~~~~~~~~~~~~~~~~~~ 开始执行打包脚本 ~~~~~~~~~~~~~~~~~~~~"
 ########################## 工程基本信息配置 ###########################
 
 #工程名称
-PROJECT_NAME="Hai"
+PROJECT_NAME="Demo"
 #需要编译的 targetname 如有多个 需要指定一个
-TARGET_NAME="Hai"
+TARGET_NAME="Demo"
 
 #ADHOC 测试版本配置
 #证书名称 (这两个选项可以通过 查看xcodeproj获得 通过subline打开,并搜索CODE_SIGN即可获取,配置文件同上)
@@ -50,6 +50,9 @@ EXPORT_OPTIONS_PLIST=${ADHOC_EXPORT_OPTIONS_PLIST}
 
 #是否上传蒲公英
 UPLOAD_PGYER=false
+
+#是否发送邮件
+SEND_EMAIL=true
 
 echo "~~~~~~~~~~~~~~~~~~~~~~~ 选择编译模式 ~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo "             1 Debug (测试模式)"
@@ -133,6 +136,30 @@ if [ -n "$param" ]
         fi
 else
     UPLOAD_PGYER=false
+fi
+
+echo "~~~~~~~~~~~~~~~~~ 是否发送邮件 ~~~~~~~~~~~~~~~~~~~~~~"
+echo "            1 是(默认)"
+echo "            2 否 "
+
+read -p "发送邮件时:请确认邮件是否以配置完成!!!  请输入:" sendEmail
+sleep 0.5
+
+if [ -n $sendEmail ]
+    then
+        if [ $sendEmail -eq 1 ]
+            then
+                SEND_EMAIL=true
+        elif [ $sendEmail -eq 2 ]
+            then
+                SEND_EMAIL=flase
+        else
+            echo "请按照提示正确输入!"
+            exit 1
+        fi
+else
+    echo "请按照提示正确输入"
+    exit 1
 fi
 
 #~~~~~~~~~~~~~~~~~~~~~~~ 现在开始编译 ~~~~~~~~~~~~~~~~~~~
@@ -223,15 +250,14 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~ 检查ipa是否导出成功 ~~~~~~~~~~~~~~~~~~~~
 
 IPA_PATH=${IPA_PATH}/${TARGET_NAME}.ipa
 
-echo "~~~~~~~~ ipa 文件路径 $IPA_PATH"
 #如果是文件则说明成功
 if [ -f $IPA_PATH ]
-echo "~~~~~~~~~~~~~~~~~~~~~~~~"
+
     then
         echo "导出ipa成功!"
 #open $BUILD_PATH
 else
-echo "########################"
+
     echo "ipa导出失败......"
     #结束时间
     END_TIEM=`date +%s`
@@ -293,11 +319,22 @@ if [ $UPLOAD_PGYER = true ]
                 if [ $? -eq 0 ]
                     then
                         echo "~~~~~~~~~~~~~~~~ 恭喜 ipa 上传成功 ~~~~~~~~~~~~~~~"
-                else
+
+                    else
                         echo "~~~~~~~~~~~~~~~~~ NO ipa 上传失败 ~~~~~~~~~~~~~~~"
                 fi
         fi
 fi
+
+#发送邮件
+if [ $SEND_EMAIL = true ]
+    then
+        echo "~~~~~~~~~~ 发送邮件 ~~~~~~~~"
+        php Email/SendEmail.php $TARGET_NAME
+else
+    echo "~~~~~~~~~~~~~~~~ 邮件发送失败 $sendEmail~~~~~~~~~~~~~"
+fi
+
 
 echo "~~~~~~~~~~~~~~~~~~~~~~~~ 打印配置信息 ~~~~~~~~~~~~~~~~~~~~~~~~"
 echo "开始执行脚本的时间: ${DATE}"
