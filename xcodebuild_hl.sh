@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TEMP=`getopt cpuh: -- $*`
+TEMP=`getopt cpueh: -- $*`
 # TEMP=`/usr/bin/getopt cpuh: -- $*`
 
 # if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
@@ -9,14 +9,16 @@ eval set -- "$TEMP"
 
 HELP="usage: $0 \t[-c <compile>] [-p <packageing method>] \n\t\t\t\t[-u <Whether or not up>]\n\n
 Option example:\n\n
--c,\t\t example:\t -c release , -c debug   \t* debug is default method\n
--p,\t\t example:\t -p appstore, -p ad-hoc \t* ad-hoc is default method\n
--u,\t\t example:\t -u y , -u n             \t\t\t* no is default method\n
+-c,\t\t compile model set,\t example: -c release , -c debug   \t* debug is default method\n
+-p,\t\t packaging model set,\t example: -p appstore, -p ad-hoc \t* ad-hoc is default method\n
+-u,\t\t Whether to upload set,\t example: -u y , -u n             \t\t\t* no is default method\n
+-e,\t\t send email set,\t example: -e y , -e n              \t\t\t* no is default\n
 -h,-help\t print help \n"
 # echo $HELP
 COMPILE=true
 PACKAGE=true
 UP=false
+EMAIL=true
 
 shift
 for i
@@ -50,7 +52,15 @@ do
                     shift 2
                 fi
             ;;
-        -[a-z])
+        -e|"'-e'"|-E|"-E")
+                EMAIL=$2
+                if [[ $2 =~ ^-[a-z] ]]; then
+                    shift
+                else
+                    shift 2
+                fi
+            ;;
+        -[a-zA-Z])
                 echo "\nUnknown option: "$i"\n"
                 echo $HELP
                 exit
@@ -99,9 +109,25 @@ case $UP in
     ;;
 esac
 
+case $EMAIL in
+    n|"n"|-*|''|false)
+        EMAIL=false
+        ;;
+    y|"y"|true)
+        EMAIL=true
+        ;;
+    *)
+        echo $HELP
+        exit
+    ;;
+esac
+
+
+
 echo "COMPILE : "$COMPILE
 echo "PACKAGE : "$PACKAGE
 echo "PU \t: "$UP
+echo "EMAIL \t"$EMAIL
 
 exit
 
