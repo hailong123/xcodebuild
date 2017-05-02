@@ -1,5 +1,137 @@
 #!/bin/sh
 
+TEMP=`getopt cpueh: -- $*`
+# TEMP=`/usr/bin/getopt cpuh: -- $*`
+
+# if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+if [ $? != 0 ] ; then echo "Terminating..." exit 2 ; fi
+eval set -- "$TEMP"
+
+HELP="usage: $0 \t[-c <compile>] [-p <packageing method>] \n\t\t\t\t[-u <Whether or not up>]\n\n
+Option example:\n\n
+-c,\t\t compile model set,\t example: -c release , -c debug   \t* debug is default method\n
+-p,\t\t packaging model set,\t example: -p appstore, -p ad-hoc \t* ad-hoc is default method\n
+-u,\t\t Whether to upload set,\t example: -u y , -u n             \t\t\t* no is default method\n
+-e,\t\t send email set,\t example: -e y , -e n              \t\t\t* no is default\n
+-h,-help\t print help \n"
+# echo $HELP
+COMPILE=true
+PACKAGE=true
+UP=false
+EMAIL=true
+
+shift
+for i
+do
+    case $i in
+        -c|"'-c'"|-C|"'-C'")
+                COMPILE=$2
+                if [[ $2 =~ ^-[a-z] ]]; then
+                    shift
+                else
+                    shift 2
+                fi
+            ;;
+        -p|"'-p'"|-P|"-P")
+                PACKAGE=$2
+                if [[ $2 =~ ^-[a-z] ]]; then
+                    shift
+                else
+                    shift 2
+                fi
+            ;;
+        -h|"'-h'"|--h|"'--h'"|-H|"'-H'"|-help|"-help"|--help|"--help")
+                echo $HELP
+                exit
+            ;;
+        -u|"'-u'"|-U|"-U")
+                UP=$2
+                if [[ $2 =~ ^-[a-z] ]]; then
+                    shift
+                else
+                    shift 2
+                fi
+            ;;
+        -e|"'-e'"|-E|"-E")
+                EMAIL=$2
+                if [[ $2 =~ ^-[a-z] ]]; then
+                    shift
+                else
+                    shift 2
+                fi
+            ;;
+        -[a-zA-Z])
+                echo "\nUnknown option: "$i"\n"
+                echo $HELP
+                exit
+            ;;
+    esac
+done
+
+#To deal with arg
+
+case $COMPILE in
+    debug|"debug"|-*|''|true)
+            COMPILE=true
+        ;;
+    release|"release"|false)
+          COMPILE=false
+        ;;
+    *)
+        echo $HELP
+        exit
+    ;;
+esac
+
+case $PACKAGE in
+    ad-hoc|"ad-hoc"|-*|true)
+        PACKAGE=true
+        ;;
+    appstore|"appstore"|false)
+        PACKAGE=false
+        ;;
+    *)
+        echo $HELP
+        exit
+    ;;
+esac
+
+case $UP in
+    n|"n"|-*|''|false)
+        UP=false
+        ;;
+    y|"y"|true)
+        UP=true
+        ;;
+    *)
+        echo $HELP
+        exit
+    ;;
+esac
+
+case $EMAIL in
+    n|"n"|-*|''|false)
+        EMAIL=false
+        ;;
+    y|"y"|true)
+        EMAIL=true
+        ;;
+    *)
+        echo $HELP
+        exit
+    ;;
+esac
+
+
+
+echo "COMPILE : "$COMPILE
+echo "PACKAGE : "$PACKAGE
+echo "PU \t: "$UP
+echo "EMAIL \t"$EMAIL
+
+exit
+
+
 echo "~~~~~~~~~~~~~~~~~~~~ 开始执行打包脚本 ~~~~~~~~~~~~~~~~~~~~"
 
 ########################## 工程基本信息配置 ###########################
@@ -347,9 +479,3 @@ echo "$ARCHIVE_TIME"
 echo "$EXPORT_TIME"
 
 exit 0
-
-
-
-
-
-
